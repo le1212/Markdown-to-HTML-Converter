@@ -866,51 +866,83 @@ def convert_markdown_to_html(markdown_file):
             background: rgba(59, 130, 246, 0.1);
         }}
 
+        /* 顶部导航栏 */
+        .top-bar {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }}
+
+        .top-bar-left {{
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }}
+
+        .top-bar-title {{
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }}
+
+        .top-bar-right {{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }}
+
         /* 侧边栏切换按钮 */
         .sidebar-toggle {{
-            position: fixed;
-            top: 0.5rem;
-            left: 0.5rem;
-            width: 2.25rem;
-            height: 2.25rem;
+            width: 2rem;
+            height: 2rem;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
-            background: var(--card-bg);
+            background: transparent;
             color: var(--text-primary);
             cursor: pointer;
             display: none;
             align-items: center;
             justify-content: center;
             font-size: 0.875rem;
-            z-index: 1001;
             transition: var(--transition);
-            box-shadow: var(--shadow-sm);
         }}
 
         .sidebar-toggle:hover {{
             background: var(--primary-color);
             color: white;
+            border-color: var(--primary-color);
         }}
 
         /* 主题切换按钮 */
         .theme-toggle {{
-            position: fixed;
-            top: 0.5rem;
-            right: 0.5rem;
-            width: 2.25rem;
-            height: 2.25rem;
+            width: 2rem;
+            height: 2rem;
             border-radius: 50%;
             border: 1px solid var(--border-color);
-            background: var(--card-bg);
+            background: transparent;
             color: var(--text-primary);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.875rem;
-            z-index: 1000;
             transition: var(--transition);
-            box-shadow: var(--shadow-sm);
+        }}
+
+        .theme-toggle:hover {{
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
         }}
 
         .theme-toggle:hover {{
@@ -1592,9 +1624,18 @@ def convert_markdown_to_html(markdown_file):
             .content {{
                 margin-left: 0 !important;
                 padding: 0.5rem !important;
-                padding-top: 3rem !important;
+                padding-top: 3.5rem !important;
                 width: 100% !important;
                 min-height: 100vh !important;
+            }}
+
+            /* 移动端显示顶部导航栏 */
+            .top-bar {{
+                display: flex !important;
+            }}
+
+            .sidebar-toggle {{
+                display: flex !important;
             }}
 
             .markdown-body {{
@@ -1737,18 +1778,23 @@ def convert_markdown_to_html(markdown_file):
     </style>
 </head>
 <body>
-    <!-- 侧边栏切换按钮 -->
-    <button class="sidebar-toggle" id="sidebarToggle" title="切换目录">
-        <i class="fas fa-bars"></i>
-    </button>
+    <!-- 顶部导航栏 -->
+    <header class="top-bar" id="topBar">
+        <div class="top-bar-left">
+            <button class="sidebar-toggle" id="sidebarToggle" title="切换目录">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="top-bar-title">{title}</span>
+        </div>
+        <div class="top-bar-right">
+            <button class="theme-toggle" id="themeToggle" title="切换主题">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
 
     <!-- 遮罩层 -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- 主题切换按钮 -->
-    <button class="theme-toggle" id="themeToggle" title="切换主题">
-        <i class="fas fa-moon"></i>
-    </button>
 
     <!-- 返回顶部按钮 -->
     <button class="back-to-top" id="backToTop" title="返回顶部">
