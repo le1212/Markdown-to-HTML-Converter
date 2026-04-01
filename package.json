@@ -2,7 +2,7 @@
   "name": "md-to-html-converter",
   "displayName": "Markdown to HTML Converter",
   "description": "将Markdown文件转换为带有目录和代码高亮的精美HTML文档",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "le1212",
   "engines": {
     "vscode": "^1.74.0"
