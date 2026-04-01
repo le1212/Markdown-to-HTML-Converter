@@ -875,11 +875,11 @@ def convert_markdown_to_html(markdown_file):
             height: 3rem;
             background: var(--card-bg);
             border-bottom: 1px solid var(--border-color);
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: space-between;
             padding: 0 1rem;
-            z-index: 100;
+            z-index: 200;
             box-shadow: var(--shadow-sm);
         }}
 
@@ -1634,8 +1634,10 @@ def convert_markdown_to_html(markdown_file):
                 display: flex !important;
             }}
 
-            .sidebar-toggle {{
-                display: flex !important;
+            /* 侧边栏在移动端展开时，确保在导航栏下方 */
+            .sidebar.expanded {{
+                top: 3rem;
+                height: calc(100vh - 3rem);
             }}
 
             .markdown-body {{
