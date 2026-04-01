@@ -1183,9 +1183,8 @@ def convert_markdown_to_html(markdown_file):
             height: 100vh;
             background-color: transparent;
             cursor: col-resize;
-            z-index: 200;
+            z-index: 50; /* 低于侧边栏的z-index: 100 */
             transition: background-color 0.2s ease, left 0.2s ease; /* 添加left过渡效果 */
-            margin-left: -2px; /* 向左偏移，使其不会覆盖侧边栏内容 */
         }}
 
         .resizer:hover, .resizer.dragging {{
