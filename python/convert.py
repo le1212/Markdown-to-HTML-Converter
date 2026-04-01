@@ -869,10 +869,10 @@ def convert_markdown_to_html(markdown_file):
         /* 侧边栏切换按钮 */
         .sidebar-toggle {{
             position: fixed;
-            top: 1rem;
-            left: 1rem;
-            width: 2.5rem;
-            height: 2.5rem;
+            top: 0.5rem;
+            left: 0.5rem;
+            width: 2.25rem;
+            height: 2.25rem;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
             background: var(--card-bg);
@@ -881,7 +881,7 @@ def convert_markdown_to_html(markdown_file):
             display: none;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 0.875rem;
             z-index: 1001;
             transition: var(--transition);
             box-shadow: var(--shadow-sm);
@@ -895,10 +895,10 @@ def convert_markdown_to_html(markdown_file):
         /* 主题切换按钮 */
         .theme-toggle {{
             position: fixed;
-            top: 1rem;
-            right: 1rem;
-            width: 2.5rem;
-            height: 2.5rem;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 2.25rem;
+            height: 2.25rem;
             border-radius: 50%;
             border: 1px solid var(--border-color);
             background: var(--card-bg);
@@ -907,7 +907,7 @@ def convert_markdown_to_html(markdown_file):
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 0.875rem;
             z-index: 1000;
             transition: var(--transition);
             box-shadow: var(--shadow-sm);
@@ -1192,7 +1192,7 @@ def convert_markdown_to_html(markdown_file):
         /* 内容区域 - 扁平化简约风格 */
         .content {{
             flex: 1;
-            padding: 2rem;
+            padding: 1rem;
             min-height: 100vh;
             overflow-y: auto;
             margin-left: var(--sidebar-width);
@@ -1202,6 +1202,7 @@ def convert_markdown_to_html(markdown_file):
             scroll-behavior: smooth;
             background-color: var(--background-color);
             transition: background-color 0.3s ease, margin-left 0.3s ease, width 0.3s ease;
+            padding-top: 0.5rem;
         }}
 
         /* 侧边栏收起时的内容区域 */
@@ -1233,7 +1234,7 @@ def convert_markdown_to_html(markdown_file):
         .markdown-body {{
             line-height: 1.8;
             background: var(--card-bg);
-            padding: 3rem;
+            padding: 1.5rem;
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-md);
             border: 1px solid var(--border-color);
@@ -1250,7 +1251,7 @@ def convert_markdown_to_html(markdown_file):
 
         .markdown-body h1 {{
             font-size: 2rem;
-            margin: 1.5rem 0 1rem;
+            margin: 0.5rem 0 1rem;
             padding-bottom: 0.75rem;
             border-bottom: 2px solid var(--border-color);
             color: var(--text-primary);
@@ -1259,7 +1260,7 @@ def convert_markdown_to_html(markdown_file):
 
         .markdown-body h2 {{
             font-size: 1.5rem;
-            margin: 2rem 0 0.75rem;
+            margin: 1.5rem 0 0.75rem;
             color: var(--text-primary);
             font-weight: 600;
             padding-left: 0.75rem;
@@ -1268,14 +1269,14 @@ def convert_markdown_to_html(markdown_file):
 
         .markdown-body h3 {{
             font-size: 1.25rem;
-            margin: 1.5rem 0 0.5rem;
+            margin: 1rem 0 0.5rem;
             color: var(--text-primary);
             font-weight: 600;
         }}
 
         .markdown-body h4 {{
             font-size: 1.125rem;
-            margin: 1.25rem 0 0.5rem;
+            margin: 0.75rem 0 0.5rem;
             color: var(--text-secondary);
             font-weight: 600;
         }}
@@ -1590,8 +1591,8 @@ def convert_markdown_to_html(markdown_file):
             /* 内容区域占满宽度 */
             .content {{
                 margin-left: 0 !important;
-                padding: 1rem !important;
-                padding-top: 4rem !important;
+                padding: 0.5rem !important;
+                padding-top: 3rem !important;
                 width: 100% !important;
                 min-height: 100vh !important;
             }}
