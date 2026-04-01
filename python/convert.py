@@ -1257,6 +1257,11 @@ def convert_markdown_to_html(markdown_file):
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }}
 
+        /* 侧边栏展开时禁止背景滚动 */
+        body.sidebar-open {{
+            overflow: hidden;
+        }}
+
         .sidebar-overlay.visible {{
             opacity: 1;
             visibility: visible;
@@ -1848,10 +1853,12 @@ def convert_markdown_to_html(markdown_file):
                 if (isExpanded) {{
                     sidebar.classList.remove('expanded');
                     sidebarOverlay.classList.remove('visible');
+                    document.body.classList.remove('sidebar-open');
                     document.body.style.overflow = '';
                 }} else {{
                     sidebar.classList.add('expanded');
                     sidebarOverlay.classList.add('visible');
+                    document.body.classList.add('sidebar-open');
                     document.body.style.overflow = 'hidden';
                 }}
             }}
