@@ -789,7 +789,7 @@ def convert_markdown_to_html(markdown_file):
             height: 100vh;
             display: flex;
             flex-direction: column;
-            z-index: 100;
+            z-index: 1000;
             flex-shrink: 0;
             overflow: hidden;
             transition: transform 0.3s ease, width 0.3s ease;
@@ -1197,8 +1197,9 @@ def convert_markdown_to_html(markdown_file):
             height: 100vh;
             background-color: transparent;
             cursor: col-resize;
-            z-index: 50; /* 低于侧边栏的z-index: 100 */
+            z-index: 50; /* 低于侧边栏的z-index: 1000 */
             transition: background-color 0.2s ease, left 0.2s ease; /* 添加left过渡效果 */
+            pointer-events: auto; /* 确保可以接收鼠标事件 */
         }}
 
         .resizer:hover, .resizer.dragging {{
@@ -1265,7 +1266,7 @@ def convert_markdown_to_html(markdown_file):
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 99;
+            z-index: 999;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -1613,7 +1614,7 @@ def convert_markdown_to_html(markdown_file):
                 border-right: 1px solid var(--border-color);
                 border-bottom: none !important;
                 transform: translateX(-100%);
-                z-index: 100;
+                z-index: 1000;
             }}
 
             /* 侧边栏展开状态 */
