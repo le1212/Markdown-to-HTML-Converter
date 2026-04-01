@@ -1794,6 +1794,7 @@ def convert_markdown_to_html(markdown_file):
 
             // 侧边栏展开/收起功能
             function toggleSidebar() {{
+                if (!sidebar || !sidebarOverlay) return;
                 const isExpanded = sidebar.classList.contains('expanded');
                 if (isExpanded) {{
                     sidebar.classList.remove('expanded');
@@ -1890,37 +1891,43 @@ def convert_markdown_to_html(markdown_file):
                 }}
             }};
 
-            themeToggle.addEventListener('click', () => {{
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                if (currentTheme === 'dark') {{
-                    document.documentElement.removeAttribute('data-theme');
-                    localStorage.setItem('theme', 'light');
-                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-                }} else {{
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    localStorage.setItem('theme', 'dark');
-                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-                }}
-            }});
+            if (themeToggle) {{
+                themeToggle.addEventListener('click', () => {{
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    if (currentTheme === 'dark') {{
+                        document.documentElement.removeAttribute('data-theme');
+                        localStorage.setItem('theme', 'light');
+                        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                    }} else {{
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        localStorage.setItem('theme', 'dark');
+                        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                    }}
+                }});
+            }}
 
             initTheme();
 
             // 返回顶部功能
-            backToTop.addEventListener('click', () => {{
-                contentElement.scrollTo({{
-                    top: 0,
-                    behavior: 'smooth'
+            if (backToTop && contentElement) {{
+                backToTop.addEventListener('click', () => {{
+                    contentElement.scrollTo({{
+                        top: 0,
+                        behavior: 'smooth'
+                    }});
                 }});
-            }});
+            }}
 
             // 显示/隐藏返回顶部按钮
-            contentElement.addEventListener('scroll', () => {{
-                if (contentElement.scrollTop > 300) {{
-                    backToTop.classList.add('visible');
-                }} else {{
-                    backToTop.classList.remove('visible');
-                }}
-            }});
+            if (contentElement && backToTop) {{
+                contentElement.addEventListener('scroll', () => {{
+                    if (contentElement.scrollTop > 300) {{
+                        backToTop.classList.add('visible');
+                    }} else {{
+                        backToTop.classList.remove('visible');
+                    }}
+                }});
+            }}
 
             // 设置侧边栏宽度（全局函数）
             const setSidebarWidth = (width) => {{
@@ -2084,7 +2091,7 @@ def convert_markdown_to_html(markdown_file):
                     if (!targetElement) return;
 
                     // 移动端：关闭侧边栏
-                    if (window.innerWidth <= 768 && sidebar.classList.contains('expanded')) {{
+                    if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('expanded')) {{
                         toggleSidebar();
                     }}
 
@@ -2099,7 +2106,7 @@ def convert_markdown_to_html(markdown_file):
                             top: targetPosition,
                             behavior: 'smooth'
                         }});
-                    }} else {{
+                    }} else if (contentElement) {{
                         // 桌面端：滚动内容区域
                         const contentRect = contentElement.getBoundingClientRect();
                         const targetRect = targetElement.getBoundingClientRect();
@@ -2128,9 +2135,14 @@ def convert_markdown_to_html(markdown_file):
                 const offset = Math.min(100, window.innerHeight * 0.1);
                 
                 // 根据设备类型获取滚动位置
-                const scrollPosition = isMobile 
-                    ? window.pageYOffset + offset 
-                    : contentElement.scrollTop + 100;
+                let scrollPosition;
+                if (isMobile) {{
+                    scrollPosition = window.pageYOffset + offset;
+                }} else if (contentElement) {{
+                    scrollPosition = contentElement.scrollTop + 100;
+                }} else {{
+                    return; // 如果contentElement不存在，直接返回
+                }}
 
                 // 找到当前可见的标题
                 for (let i = headings.length - 1; i >= 0; i--) {{
@@ -2202,7 +2214,9 @@ def convert_markdown_to_html(markdown_file):
             }}
 
             // 桌面端监听内容区域滚动
-            contentElement.addEventListener('scroll', handleScroll);
+            if (contentElement) {{
+                contentElement.addEventListener('scroll', handleScroll);
+            }}
             
             // 移动端监听window滚动
             window.addEventListener('scroll', handleScroll);
