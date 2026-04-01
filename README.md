@@ -138,13 +138,102 @@ python python/convert.py file1.md file2.md file3.md
 
 ## 生成的HTML特性
 
+### 界面特性
+
 - 🎨 现代化扁平设计
-- 🌙 深色/浅色模式切换
-- 📑 侧边栏目录导航
+- 🌙 深色/浅色模式切换（自动保存偏好）
+- 📑 侧边栏目录导航（可折叠）
 - 🔍 目录搜索功能
-- 💻 代码语法高亮 (Prism.js)
-- 📱 响应式设计
+- 📱 响应式设计（适配移动端）
 - ⬆️ 返回顶部按钮
+
+### Markdown支持
+
+- ✅ 标题（H1-H6，自动生成目录）
+- ✅ 段落和换行
+- ✅ 粗体、斜体、粗斜体
+- ✅ 有序列表、无序列表
+- ✅ 代码块（带语法高亮）
+- ✅ 行内代码
+- ✅ 引用块（便签风格）
+- ✅ 表格
+- ✅ 链接和图片
+- ✅ 水平线
+- ✅ HTML标签
+
+### 代码高亮
+
+使用 Prism.js 支持 300+ 种编程语言的语法高亮：
+
+- JavaScript / TypeScript
+- Python
+- Java / Kotlin
+- C / C++ / C#
+- Go / Rust
+- HTML / CSS
+- SQL
+- Shell / Bash
+- 以及更多...
+
+## 项目结构
+
+```
+md-to-html-converter/
+├── python/
+│   └── convert.py          # Python转换脚本
+├── src/
+│   └── extension.ts        # VS Code扩展代码
+├── editors/
+│   ├── jetbrains/          # JetBrains配置
+│   ├── sublime-text/       # Sublime Text配置
+│   ├── vim/                # Vim/Neovim配置
+│   ├── notepad++/          # Notepad++配置
+│   └── atom/               # Atom配置
+├── package.json            # 扩展配置
+├── tsconfig.json           # TypeScript配置
+├── README.md               # 说明文档
+└── LICENSE                 # MIT许可证
+```
+
+## 常见问题
+
+### Q: 转换后中文显示乱码？
+
+A: 确保您的Markdown文件使用UTF-8编码保存。
+
+### Q: 代码块没有语法高亮？
+
+A: 需要在网络环境下才能加载Prism.js。如果离线使用，可以下载Prism.js到本地。
+
+### Q: 如何自定义HTML样式？
+
+A: 修改 `python/convert.py` 中的CSS样式即可。
+
+### Q: 支持哪些Markdown扩展语法？
+
+A: 目前支持标准Markdown语法，暂不支持GFM扩展语法（如任务列表、删除线等）。
+
+## 贡献指南
+
+欢迎提交 Issue 和 Pull Request！
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
+
+## 更新日志
+
+### v1.0.0 (2024-04-01)
+
+- ✨ 初始版本发布
+- ✅ VS Code扩展支持
+- ✅ 多编辑器配置支持
+- ✅ 深色/浅色模式切换
+- ✅ 侧边栏目录导航
+- ✅ 代码语法高亮
+- ✅ 目录搜索功能
 
 ## 依赖
 
@@ -153,4 +242,13 @@ python python/convert.py file1.md file2.md file3.md
 
 ## 许可证
 
-MIT License
+[MIT License](LICENSE)
+
+## 作者
+
+le1212
+
+## 链接
+
+- [GitHub仓库](https://github.com/le1212/Markdown-to-HTML-Converter)
+- [问题反馈](https://github.com/le1212/Markdown-to-HTML-Converter/issues)
