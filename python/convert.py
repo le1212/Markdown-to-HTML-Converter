@@ -1158,7 +1158,7 @@ def convert_markdown_to_html(markdown_file):
         .content {{
             flex: 1;
             padding: 2rem;
-            height: 100vh;
+            min-height: 100vh;
             overflow-y: auto;
             margin-left: var(--sidebar-width);
             width: calc(100% - var(--sidebar-width));
@@ -1166,7 +1166,7 @@ def convert_markdown_to_html(markdown_file):
             box-sizing: border-box;
             scroll-behavior: smooth;
             background-color: var(--background-color);
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, margin-left 0.3s ease, width 0.3s ease;
         }}
 
         /* Markdown内容样式 - 扁平化简约风格 */
@@ -1443,11 +1443,13 @@ def convert_markdown_to_html(markdown_file):
 
         /* 响应式设计 */
         @media (max-width: 1024px) {{
-            /* 移除强制设置sidebar-width，保留用户设置的宽度 */
-            /* 只调整最小和最大宽度限制 */
+            :root {{
+                --sidebar-width: 280px !important;
+            }}
+
             .sidebar {{
-                min-width: 220px; /* 调整最小宽度 */
-                max-width: 500px; /* 调整最大宽度，允许拖拽扩展 */
+                min-width: 220px !important;
+                max-width: 500px !important;
             }}
 
             .sidebar-header {{
@@ -1459,35 +1461,39 @@ def convert_markdown_to_html(markdown_file):
             }}
 
             .resizer {{
-                left: var(--sidebar-width);
+                left: var(--sidebar-width) !important;
             }}
 
             .content {{
                 padding: 1.25rem;
-                margin-left: var(--sidebar-width); /* 使用CSS变量 */
-                width: calc(100% - var(--sidebar-width)); /* 使用CSS变量计算剩余宽度 */
+                margin-left: var(--sidebar-width) !important;
+                width: calc(100% - var(--sidebar-width)) !important;
             }}
 
             .markdown-body {{
                 padding: 1.75rem;
-                max-width: 1200px; /* 调整最大宽度 */
+                max-width: 1200px;
             }}
         }}
 
         @media (max-width: 768px) {{
             body {{
-                flex-direction: column;
-                overflow: auto; /* 移动端恢复滚动 */
+                flex-direction: column !important;
+                overflow: visible !important;
+                min-height: 100vh;
             }}
 
             .sidebar {{
-                width: 100%;
-                height: auto;
-                position: static;
-                border-right: none;
+                width: 100% !important;
+                min-width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+                position: static !important;
+                border-right: none !important;
                 border-bottom: 1px solid var(--border-color);
-                display: block;
+                display: block !important;
                 background: var(--sidebar-bg);
+                flex-shrink: 0;
             }}
 
             .sidebar-header {{
@@ -1513,50 +1519,64 @@ def convert_markdown_to_html(markdown_file):
                 padding: 0.75rem 1.25rem;
                 overflow-y: visible;
                 max-height: none;
-                transition: max-height 0.3s ease, opacity 0.3s ease;
+                transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
             }}
 
             .sidebar-content.collapsed {{
-                max-height: 0;
+                max-height: 0 !important;
                 opacity: 0;
-                padding: 0;
-                overflow: hidden;
+                padding: 0 1.25rem !important;
+                overflow: hidden !important;
             }}
 
             /* 移动端隐藏拖拽分隔线 */
             .resizer {{
-                display: none;
+                display: none !important;
             }}
 
             .content {{
-                margin-left: 0;
-                padding: 1rem; /* 减少padding，避免双重留白 */
-                width: 100%;
-                height: auto;
-                overflow-y: visible;
+                margin-left: 0 !important;
+                padding: 1rem !important;
+                width: 100% !important;
+                min-height: auto !important;
+                height: auto !important;
+                overflow-y: visible !important;
             }}
 
             .markdown-body {{
                 padding: 1.25rem;
                 box-shadow: var(--shadow-sm);
-                max-width: 100%; /* 移动端使用全宽 */
+                max-width: 100% !important;
+                width: 100%;
             }}
 
             .toc {{
-                /* 移除高度限制，让目录可以显示所有项 */
-                /* max-height: 250px; */
                 overflow-y: auto;
             }}
 
             /* 移动端目录链接优化 */
             .toc a {{
-                white-space: normal; /* 移动端允许换行 */
-                overflow: visible; /* 移动端显示完整内容 */
-                text-overflow: clip; /* 移动端不使用省略号 */
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
             }}
 
             .toc-item a {{
-                max-width: 100%; /* 移动端使用完整宽度 */
+                max-width: 100% !important;
+            }}
+
+            /* 移动端按钮优化 */
+            .theme-toggle {{
+                width: 2.25rem;
+                height: 2.25rem;
+                font-size: 0.875rem;
+            }}
+
+            .back-to-top {{
+                width: 2.25rem;
+                height: 2.25rem;
+                font-size: 0.875rem;
+                bottom: 1rem;
             }}
         }}
 
