@@ -1179,12 +1179,13 @@ def convert_markdown_to_html(markdown_file):
             position: fixed;
             top: 0;
             left: var(--sidebar-width);
-            width: 8px;
+            width: 4px;
             height: 100vh;
             background-color: transparent;
             cursor: col-resize;
             z-index: 200;
             transition: background-color 0.2s ease, left 0.2s ease; /* 添加left过渡效果 */
+            margin-left: -2px; /* 向左偏移，使其不会覆盖侧边栏内容 */
         }}
 
         .resizer:hover, .resizer.dragging {{
