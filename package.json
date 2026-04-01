@@ -1,0 +1,111 @@
+{
+  "name": "md-to-html-converter",
+  "displayName": "Markdown to HTML Converter",
+  "description": "将Markdown文件转换为带有目录和代码高亮的精美HTML文档",
+  "version": "1.0.0",
+  "publisher": "your-publisher-name",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:mdToHtml.convert",
+    "onCommand:mdToHtml.convertAll",
+    "onLanguage:markdown"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mdToHtml.convert",
+        "title": "Markdown转HTML: 转换当前文件"
+      },
+      {
+        "command": "mdToHtml.convertAll",
+        "title": "Markdown转HTML: 转换所有Markdown文件"
+      },
+      {
+        "command": "mdToHtml.preview",
+        "title": "Markdown转HTML: 预览HTML"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceFilename =~ /\\.md$/",
+          "command": "mdToHtml.convert",
+          "group": "navigation@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "resourceFilename =~ /\\.md$/",
+          "command": "mdToHtml.convert",
+          "group": "navigation@1"
+        },
+        {
+          "when": "resourceFilename =~ /\\.md$/",
+          "command": "mdToHtml.preview",
+          "group": "navigation@2"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Markdown to HTML Converter",
+      "properties": {
+        "mdToHtml.autoConvertOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "保存Markdown文件时自动转换为HTML"
+        },
+        "mdToHtml.outputDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "HTML输出目录（留空则输出到源文件同目录）"
+        },
+        "mdToHtml.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Python解释器路径"
+        },
+        "mdToHtml.showNotification": {
+          "type": "boolean",
+          "default": true,
+          "description": "转换完成后显示通知"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "mdToHtml.convert",
+        "key": "ctrl+shift+h",
+        "mac": "cmd+shift+h",
+        "when": "editorTextFocus && resourceFilename =~ /\\.md$/"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0",
+    "@vscode/vsce": "^2.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/md-to-html-converter.git"
+  },
+  "license": "MIT"
+}
