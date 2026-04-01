@@ -660,23 +660,37 @@ def enhanced_markdown_to_html(markdown_text, heading_id_map=None):
 
 def convert_markdown_to_html(markdown_file):
     """将Markdown文件转换为带侧边栏的HTML"""
-    # 读取Markdown文件
-    try:
-        with open(markdown_file, 'r', encoding='utf-8') as f:
-            markdown_content = f.read()
-    except FileNotFoundError:
-        raise FileNotFoundError(f"文件 '{markdown_file}' 不存在")
-    except PermissionError:
-        raise PermissionError(f"没有权限读取文件 '{markdown_file}'")
-    except UnicodeDecodeError:
-        # 尝试其他编码
+    # 读取Markdown文件，尝试多种编码
+    encodings_to_try = ['utf-8', 'gbk', 'gb2312', 'gb18030', 'big5', 'latin-1']
+    markdown_content = None
+
+    for encoding in encodings_to_try:
         try:
-            with open(markdown_file, 'r', encoding='gbk') as f:
+            with open(markdown_file, 'r', encoding=encoding) as f:
                 markdown_content = f.read()
+            break
         except UnicodeDecodeError:
-            raise UnicodeDecodeError(f"无法解码文件 '{markdown_file}'，请检查文件编码")
-    except Exception as e:
-        raise Exception(f"读取文件时发生错误: {e}")
+            continue
+        except FileNotFoundError:
+            raise FileNotFoundError(f"文件 '{markdown_file}' 不存在")
+        except PermissionError:
+            raise PermissionError(f"没有权限读取文件 '{markdown_file}'")
+        except Exception as e:
+            # 如果是第一次尝试失败，继续尝试其他编码
+            if encoding == encodings_to_try[0]:
+                continue
+            else:
+                raise Exception(f"读取文件时发生错误: {e}")
+
+    if markdown_content is None:
+        # 如果所有编码都失败，尝试使用二进制模式读取并忽略错误
+        try:
+            with open(markdown_file, 'rb') as f:
+                binary_content = f.read()
+            # 尝试用utf-8解码，忽略错误
+            markdown_content = binary_content.decode('utf-8', errors='ignore')
+        except Exception as e:
+            raise Exception(f"无法读取文件 '{markdown_file}'，所有编码尝试都失败: {e}")
 
     # 提取标题
     headings = extract_headings(markdown_content)
@@ -1834,9 +1848,83 @@ def convert_markdown_to_html(markdown_file):
         </article>
     </main>
 
+    <!-- 调试面板（仅在调试模式下显示） -->
+    <div id="debugPanel" style="display: none; position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 10000; max-width: 300px; max-height: 200px; overflow: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <strong>调试面板</strong>
+            <button id="debugClose" style="background: none; border: none; color: white; cursor: pointer;">×</button>
+        </div>
+        <div id="debugLogs" style="font-family: monospace;"></div>
+    </div>
+
     <script>
-        // 简单的目录交互
+        // 增强的目录交互 - 带错误处理和调试功能
         document.addEventListener('DOMContentLoaded', function() {{
+            // 调试模式开关（可通过URL参数 ?debug=true 启用）
+            const urlParams = new URLSearchParams(window.location.search);
+            const debugMode = urlParams.get('debug') === 'true';
+
+            // 调试日志函数
+            const debugLogs = [];
+            const maxDebugLogs = 20;
+
+            function debugLog(...args) {{
+                if (debugMode) {{
+                    const timestamp = new Date().toLocaleTimeString();
+                    const logEntry = '[' + timestamp + '] ' + args.map(arg =>
+                        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+                    ).join(' ');
+
+                    console.log('[MD-HTML-Debug]', ...args);
+
+                    // 添加到日志数组
+                    debugLogs.push(logEntry);
+                    if (debugLogs.length > maxDebugLogs) {{
+                        debugLogs.shift();
+                    }}
+
+                    // 更新调试面板
+                    updateDebugPanel();
+                }}
+            }}
+
+            function updateDebugPanel() {{
+                const debugPanel = document.getElementById('debugPanel');
+                const debugLogsElement = document.getElementById('debugLogs');
+                if (debugPanel && debugLogsElement) {{
+                    debugLogsElement.innerHTML = debugLogs.map(log =>
+                        '<div style="margin-bottom: 2px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px;">' + log + '</div>'
+                    ).join('');
+                    debugLogsElement.scrollTop = debugLogsElement.scrollHeight;
+                }}
+            }}
+
+            // 错误处理函数
+            function handleError(context, error) {{
+                console.error('[MD-HTML-Error] ' + context + ':', error);
+                if (debugMode) {{
+                    alert('错误发生在: ' + context + '\\n错误信息: ' + error.message);
+                }}
+            }}
+
+            // 初始化日志
+            debugLog('页面加载完成，开始初始化...');
+
+            // 初始化调试面板
+            const debugPanel = document.getElementById('debugPanel');
+            const debugClose = document.getElementById('debugClose');
+            if (debugMode && debugPanel) {{
+                debugPanel.style.display = 'block';
+                debugLog('调试模式已启用');
+            }}
+            if (debugClose) {{
+                debugClose.addEventListener('click', () => {{
+                    if (debugPanel) {{
+                        debugPanel.style.display = 'none';
+                    }}
+                }});
+            }}
+
             const tocLinks = document.querySelectorAll('.toc a');
             const contentElement = document.querySelector('.content');
             const resizer = document.getElementById('sidebarResizer');
@@ -1847,6 +1935,19 @@ def convert_markdown_to_html(markdown_file):
             const tocSearch = document.getElementById('tocSearch');
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            // 记录元素状态
+            debugLog('找到元素:', {{
+                '目录链接数量': tocLinks.length,
+                '内容区域': contentElement ? '存在' : '不存在',
+                '侧边栏': sidebar ? '存在' : '不存在',
+                '拖拽分隔线': resizer ? '存在' : '不存在',
+                '主题切换按钮': themeToggle ? '存在' : '不存在',
+                '返回顶部按钮': backToTop ? '存在' : '不存在',
+                '目录搜索框': tocSearch ? '存在' : '不存在',
+                '侧边栏切换按钮': sidebarToggle ? '存在' : '不存在',
+                '遮罩层': sidebarOverlay ? '存在' : '不存在'
+            }});
 
             // 侧边栏展开/收起功能
             function toggleSidebar() {{
@@ -2135,146 +2236,203 @@ def convert_markdown_to_html(markdown_file):
                 }});
             }}
 
-            // 平滑滚动
+            // 平滑滚动 - 增强版带错误处理
             tocLinks.forEach(link => {{
                 link.addEventListener('click', function(e) {{
-                    e.preventDefault();
-                    const href = this.getAttribute('href');
-                    if (!href || !href.startsWith('#')) return;
+                    try {{
+                        e.preventDefault();
+                        debugLog('点击目录链接:', this.textContent, 'href:', this.getAttribute('href'));
 
-                    const targetId = href.substring(1);
-                    if (!targetId) return;
-
-                    const targetElement = document.getElementById(targetId);
-                    if (!targetElement) return;
-
-                    // 移动端：关闭侧边栏
-                    if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('expanded')) {{
-                        toggleSidebar();
-                    }}
-
-                    // 确保父级展开
-                    let parent = this.closest('li');
-                    while (parent) {{
-                        const toggle = parent.querySelector('.toc-toggle');
-                        const children = parent.querySelector('.toc-children');
-
-                        if (toggle && children) {{
-                            children.classList.remove('collapsed');
-                            toggle.classList.add('expanded');
+                        const href = this.getAttribute('href');
+                        if (!href || !href.startsWith('#')) {{
+                            debugLog('链接格式不正确:', href);
+                            return;
                         }}
 
-                        parent = parent.parentElement?.closest('li');
-                    }}
+                        const targetId = href.substring(1);
+                        if (!targetId) {{
+                            debugLog('目标ID为空');
+                            return;
+                        }}
 
-                    // 计算滚动位置
-                    const isMobile = window.innerWidth <= 768;
-                    const offset = Math.min(100, window.innerHeight * 0.1);
+                        const targetElement = document.getElementById(targetId);
+                        if (!targetElement) {{
+                            debugLog('未找到目标元素，ID:', targetId);
+                            return;
+                        }}
 
-                    if (isMobile) {{
-                        // 移动端：滚动整个页面
-                        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - offset;
-                        window.scrollTo({{
-                            top: targetPosition,
-                            behavior: 'smooth'
-                        }});
-                    }} else if (contentElement) {{
-                        // 桌面端：滚动内容区域
-                        const contentRect = contentElement.getBoundingClientRect();
+                        debugLog('找到目标元素:', targetElement.tagName, targetElement.textContent?.substring(0, 50));
+
+                        // 移动端：关闭侧边栏
+                        if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('expanded')) {{
+                            debugLog('移动端，关闭侧边栏');
+                            toggleSidebar();
+                        }}
+
+                        // 确保父级展开
+                        let parent = this.closest('li');
+                        let expandedCount = 0;
+                        while (parent) {{
+                            const toggle = parent.querySelector('.toc-toggle');
+                            const children = parent.querySelector('.toc-children');
+
+                            if (toggle && children) {{
+                                children.classList.remove('collapsed');
+                                toggle.classList.add('expanded');
+                                expandedCount++;
+                            }}
+
+                            parent = parent.parentElement?.closest('li');
+                        }}
+                        debugLog('展开父级目录项数量:', expandedCount);
+
+                        // 计算滚动位置 - 统一使用window.scrollTo确保兼容性
+                        const offset = Math.min(100, window.innerHeight * 0.1);
                         const targetRect = targetElement.getBoundingClientRect();
-                        const scrollTop = contentElement.scrollTop;
-                        const targetTop = targetRect.top - contentRect.top + scrollTop;
+                        const targetPosition = targetRect.top + window.pageYOffset - offset;
 
-                        contentElement.scrollTo({{
-                            top: targetTop - offset,
-                            behavior: 'smooth'
+                        debugLog('滚动参数:', {{
+                            '窗口高度': window.innerHeight,
+                            '偏移量': offset,
+                            '目标元素顶部位置': targetRect.top,
+                            '页面滚动位置': window.pageYOffset,
+                            '目标滚动位置': targetPosition
                         }});
-                    }}
 
-                    // 更新活动状态
-                    tocLinks.forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
+                        // 使用try-catch包装滚动操作
+                        try {{
+                            window.scrollTo({{
+                                top: targetPosition,
+                                behavior: 'smooth'
+                            }});
+                            debugLog('滚动执行成功，目标位置:', targetPosition);
+                        }} catch (scrollError) {{
+                            handleError('滚动操作失败', scrollError);
+                            // 回退到非平滑滚动
+                            window.scrollTo(0, targetPosition);
+                            debugLog('使用回退滚动到位置:', targetPosition);
+                        }}
+
+                        // 更新活动状态
+                        tocLinks.forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                        debugLog('更新活动链接:', this.textContent);
+
+                    }} catch (error) {{
+                        handleError('目录点击事件处理', error);
+                    }}
                 }});
             }});
 
-            // 滚动时更新活动状态 - 使用防抖优化性能
+            // 滚动时更新活动状态 - 使用防抖优化性能（增强版）
             let scrollTimeout = null;
-            
+
             function updateActiveHeading() {{
-                const headings = document.querySelectorAll('.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6');
-                let currentActiveId = null;
-                const isMobile = window.innerWidth <= 768;
-                const offset = Math.min(100, window.innerHeight * 0.1);
-                
-                // 根据设备类型获取滚动位置
-                let scrollPosition;
-                if (isMobile) {{
-                    scrollPosition = window.pageYOffset + offset;
-                }} else if (contentElement) {{
-                    scrollPosition = contentElement.scrollTop + 100;
-                }} else {{
-                    return; // 如果contentElement不存在，直接返回
-                }}
+                try {{
+                    const headings = document.querySelectorAll('.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6');
+                    let currentActiveId = null;
+                    const offset = Math.min(100, window.innerHeight * 0.1);
 
-                // 找到当前可见的标题
-                for (let i = headings.length - 1; i >= 0; i--) {{
-                    const heading = headings[i];
-                    if (heading.offsetTop <= scrollPosition + offset) {{
-                        currentActiveId = heading.id;
-                        break;
-                    }}
-                }}
+                    // 获取滚动位置 - 统一使用window.pageYOffset
+                    let scrollPosition = window.pageYOffset + offset;
 
-                // 更新活动链接
-                let activeLink = null;
-                if (currentActiveId) {{
-                    tocLinks.forEach(link => {{
-                        const linkId = link.getAttribute('href').substring(1);
-                        if (linkId === currentActiveId) {{
-                            link.classList.add('active');
-                            activeLink = link;
-                        }} else {{
-                            link.classList.remove('active');
+                    debugLog('更新活动标题，滚动位置:', scrollPosition, '标题数量:', headings.length);
+
+                    // 找到当前可见的标题
+                    for (let i = headings.length - 1; i >= 0; i--) {{
+                        const heading = headings[i];
+                        if (heading.offsetTop <= scrollPosition + offset) {{
+                            currentActiveId = heading.id;
+                            debugLog('找到活动标题:', heading.textContent?.substring(0, 50), 'ID:', currentActiveId);
+                            break;
                         }}
-                    }});
-                }}
+                    }}
 
-                // 如果找到活动链接，确保它在侧边栏中可见
-                if (activeLink) {{
-                    const sidebarContent = document.querySelector('.sidebar-content');
-                    if (sidebarContent) {{
-                        const linkRect = activeLink.getBoundingClientRect();
-                        const sidebarRect = sidebarContent.getBoundingClientRect();
+                    // 如果没有找到活动标题，选择第一个标题
+                    if (!currentActiveId && headings.length > 0) {{
+                        currentActiveId = headings[0].id;
+                        debugLog('未找到活动标题，使用第一个标题:', headings[0].textContent?.substring(0, 50));
+                    }}
 
-                        const linkTopRelative = linkRect.top - sidebarRect.top + sidebarContent.scrollTop;
-                        const linkBottomRelative = linkRect.bottom - sidebarRect.top + sidebarContent.scrollTop;
-
-                        const sidebarScrollTop = sidebarContent.scrollTop;
-                        const sidebarHeight = sidebarContent.clientHeight;
-
-                        const isAboveViewport = linkTopRelative < sidebarScrollTop;
-                        const isBelowViewport = linkBottomRelative > sidebarScrollTop + sidebarHeight;
-
-                        if (isAboveViewport || isBelowViewport) {{
-                            let targetScrollTop;
-
-                            if (isAboveViewport) {{
-                                targetScrollTop = linkTopRelative - 20;
-                            }} else {{
-                                targetScrollTop = linkBottomRelative - sidebarHeight + 20;
+                    // 更新活动链接
+                    let activeLink = null;
+                    let updatedCount = 0;
+                    if (currentActiveId) {{
+                        tocLinks.forEach(link => {{
+                            try {{
+                                const linkId = link.getAttribute('href')?.substring(1);
+                                if (linkId === currentActiveId) {{
+                                    link.classList.add('active');
+                                    activeLink = link;
+                                    updatedCount++;
+                                }} else {{
+                                    link.classList.remove('active');
+                                }}
+                            }} catch (linkError) {{
+                                debugLog('更新链接状态时出错:', linkError);
                             }}
+                        }});
+                        debugLog('更新链接状态完成，活动链接:', activeLink ? '找到' : '未找到', '更新数量:', updatedCount);
+                    }}
 
-                            const maxScrollTop = sidebarContent.scrollHeight - sidebarHeight;
-                            const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
+                    // 如果找到活动链接，确保它在侧边栏中可见
+                    if (activeLink) {{
+                        try {{
+                            const sidebarContent = document.querySelector('.sidebar-content');
+                            if (sidebarContent) {{
+                                const linkRect = activeLink.getBoundingClientRect();
+                                const sidebarRect = sidebarContent.getBoundingClientRect();
 
-                            if (Math.abs(sidebarScrollTop - finalScrollTop) > 5) {{
-                                sidebarContent.scrollTo({{
-                                    top: finalScrollTop,
-                                    behavior: 'smooth'
+                                const linkTopRelative = linkRect.top - sidebarRect.top + sidebarContent.scrollTop;
+                                const linkBottomRelative = linkRect.bottom - sidebarRect.top + sidebarContent.scrollTop;
+
+                                const sidebarScrollTop = sidebarContent.scrollTop;
+                                const sidebarHeight = sidebarContent.clientHeight;
+
+                                const isAboveViewport = linkTopRelative < sidebarScrollTop;
+                                const isBelowViewport = linkBottomRelative > sidebarScrollTop + sidebarHeight;
+
+                                debugLog('侧边栏滚动检查:', {{
+                                    '链接相对顶部': linkTopRelative,
+                                    '链接相对底部': linkBottomRelative,
+                                    '侧边栏滚动位置': sidebarScrollTop,
+                                    '侧边栏高度': sidebarHeight,
+                                    '在上方视口': isAboveViewport,
+                                    '在下方视口': isBelowViewport
                                 }});
+
+                                if (isAboveViewport || isBelowViewport) {{
+                                    let targetScrollTop;
+
+                                    if (isAboveViewport) {{
+                                        targetScrollTop = linkTopRelative - 20;
+                                    }} else {{
+                                        targetScrollTop = linkBottomRelative - sidebarHeight + 20;
+                                    }}
+
+                                    const maxScrollTop = sidebarContent.scrollHeight - sidebarHeight;
+                                    const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
+
+                                    if (Math.abs(sidebarScrollTop - finalScrollTop) > 5) {{
+                                        try {{
+                                            sidebarContent.scrollTo({{
+                                                top: finalScrollTop,
+                                                behavior: 'smooth'
+                                            }});
+                                            debugLog('侧边栏滚动到位置:', finalScrollTop);
+                                        }} catch (scrollError) {{
+                                            debugLog('侧边栏滚动失败:', scrollError);
+                                            sidebarContent.scrollTop = finalScrollTop;
+                                        }}
+                                    }}
+                                }}
                             }}
+                        }} catch (sidebarError) {{
+                            debugLog('侧边栏可见性调整时出错:', sidebarError);
                         }}
                     }}
+                }} catch (error) {{
+                    handleError('更新活动标题', error);
                 }}
             }}
 
@@ -2285,12 +2443,7 @@ def convert_markdown_to_html(markdown_file):
                 scrollTimeout = setTimeout(updateActiveHeading, 50);
             }}
 
-            // 桌面端监听内容区域滚动
-            if (contentElement) {{
-                contentElement.addEventListener('scroll', handleScroll);
-            }}
-            
-            // 移动端监听window滚动
+            // 监听window滚动事件
             window.addEventListener('scroll', handleScroll);
 
             // 初始激活第一个可见的标题
@@ -2444,7 +2597,23 @@ def convert_markdown_to_html(markdown_file):
     # 保存HTML文件 - 使用Path对象正确处理文件扩展名
     markdown_path = Path(markdown_file)
     output_file = str(markdown_path.with_suffix('.html'))
+
     try:
+        # 检查磁盘空间
+        try:
+            import shutil
+            total, used, free = shutil.disk_usage(os.path.dirname(output_file))
+            # 如果可用空间小于10MB，发出警告
+            if free < 10 * 1024 * 1024:
+                print(f"警告: 磁盘空间不足，仅剩 {free // (1024*1024)}MB 可用空间")
+        except:
+            pass  # 忽略磁盘空间检查错误
+
+        # 检查文件是否已经存在且只读
+        if os.path.exists(output_file):
+            if not os.access(output_file, os.W_OK):
+                raise PermissionError(f"文件 '{output_file}' 是只读的，无法写入")
+
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(html_content)
     except PermissionError:

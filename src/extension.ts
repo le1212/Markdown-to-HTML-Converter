@@ -120,8 +120,19 @@ async function convertFile(filePath: string): Promise<void> {
     if (outputDir) {
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filePath));
         if (workspaceFolder) {
-            const relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
-            outputPath = path.join(workspaceFolder.uri.fsPath, outputDir, path.basename(filePath));
+            // 确保输出目录存在
+            const outputDirPath = path.join(workspaceFolder.uri.fsPath, outputDir);
+            if (!fs.existsSync(outputDirPath)) {
+                fs.mkdirSync(outputDirPath, { recursive: true });
+            }
+            outputPath = path.join(outputDirPath, path.basename(filePath));
+        } else {
+            // 文件不在工作区内，使用相对路径
+            const outputDirPath = path.join(path.dirname(filePath), outputDir);
+            if (!fs.existsSync(outputDirPath)) {
+                fs.mkdirSync(outputDirPath, { recursive: true });
+            }
+            outputPath = path.join(outputDirPath, path.basename(filePath));
         }
     }
     
@@ -130,6 +141,9 @@ async function convertFile(filePath: string): Promise<void> {
     outputChannel.appendLine(`脚本路径: ${scriptPath}`);
     
     return new Promise((resolve, reject) => {
+        const timeoutMs = 30000; // 30秒超时
+        let timeoutId: NodeJS.Timeout | null = null;
+
         const childProcess = spawn(pythonPath, [scriptPath, filePath], {
             cwd: path.dirname(filePath),
             env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
@@ -148,11 +162,32 @@ async function convertFile(filePath: string): Promise<void> {
             outputChannel.append(data.toString());
         });
         
+        // 设置超时
+        timeoutId = setTimeout(() => {
+            if (childProcess.pid) {
+                outputChannel.appendLine('转换超时，正在终止进程...');
+                childProcess.kill('SIGTERM');
+                const errorMsg = '转换超时（30秒）';
+                outputChannel.appendLine(errorMsg);
+                vscode.window.showErrorMessage(errorMsg);
+                reject(new Error(errorMsg));
+            }
+        }, timeoutMs);
+
+        const cleanup = () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+        };
+
         childProcess.on('close', (code: number | null) => {
+            cleanup();
+
             if (code === 0) {
-                const htmlPath = filePath.replace(/\.md$/, '.html');
+                const htmlPath = outputPath.replace(/\.md$/, '.html');
                 outputChannel.appendLine(`转换成功: ${htmlPath}`);
-                
+
                 if (showNotification) {
                     vscode.window.showInformationMessage(
                         `转换成功: ${path.basename(htmlPath)}`,
@@ -164,18 +199,25 @@ async function convertFile(filePath: string): Promise<void> {
                         } else if (choice === '打开文件夹') {
                             vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(htmlPath));
                         }
+                    }, (err: Error) => {
+                        outputChannel.appendLine(`显示通知时出错: ${err.message}`);
                     });
                 }
                 resolve();
             } else {
-                const errorMsg = `转换失败: ${stderr || stdout}`;
+                // 优先使用stderr，如果stderr为空但有stdout，则使用stdout
+                const errorOutput = stderr.trim() || stdout.trim();
+                const errorMsg = errorOutput
+                    ? `转换失败: ${errorOutput}`
+                    : `转换失败: Python进程退出代码 ${code}`;
                 outputChannel.appendLine(errorMsg);
                 vscode.window.showErrorMessage(errorMsg);
                 reject(new Error(errorMsg));
             }
         });
-        
+
         childProcess.on('error', (err: Error) => {
+            cleanup();
             const errorMsg = `执行Python失败: ${err.message}`;
             outputChannel.appendLine(errorMsg);
             vscode.window.showErrorMessage(errorMsg);
