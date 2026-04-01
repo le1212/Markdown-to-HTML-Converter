@@ -1258,8 +1258,10 @@ def convert_markdown_to_html(markdown_file):
         }}
 
         /* 侧边栏展开时禁止背景滚动 */
-        body.sidebar-open {{
+        body.sidebar-open,
+        body.sidebar-open html {{
             overflow: hidden;
+            height: 100%;
         }}
 
         .sidebar-overlay.visible {{
