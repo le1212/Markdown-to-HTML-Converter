@@ -757,24 +757,33 @@ def convert_markdown_to_html(markdown_file):
             display: flex;
             min-height: 100vh;
             font-size: 15px;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             transition: background-color 0.3s ease;
         }}
 
         /* 侧边栏 - 扁平化简约风格 */
         .sidebar {{
             width: var(--sidebar-width);
-            min-width: 280px;  /* 增加最小宽度 */
-            max-width: 600px;  /* 增加最大宽度，允许拖拽扩展 */
+            min-width: 280px;
+            max-width: 600px;
             background: var(--sidebar-bg);
             border-right: 1px solid var(--border-color);
             position: fixed;
+            left: 0;
+            top: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
             z-index: 100;
             flex-shrink: 0;
-            overflow: hidden; /* 防止内容溢出 */
+            overflow: hidden;
+            transition: transform 0.3s ease, width 0.3s ease;
+        }}
+
+        /* 侧边栏收起状态 */
+        .sidebar.collapsed {{
+            transform: translateX(-100%);
         }}
 
         .sidebar-header {{
@@ -855,6 +864,32 @@ def convert_markdown_to_html(markdown_file):
 
         .toc li.highlight {{
             background: rgba(59, 130, 246, 0.1);
+        }}
+
+        /* 侧边栏切换按钮 */
+        .sidebar-toggle {{
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            z-index: 1001;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }}
+
+        .sidebar-toggle:hover {{
+            background: var(--primary-color);
+            color: white;
         }}
 
         /* 主题切换按钮 */
@@ -1169,6 +1204,31 @@ def convert_markdown_to_html(markdown_file):
             transition: background-color 0.3s ease, margin-left 0.3s ease, width 0.3s ease;
         }}
 
+        /* 侧边栏收起时的内容区域 */
+        body.sidebar-collapsed .content {{
+            margin-left: 0;
+            width: 100%;
+        }}
+
+        /* 遮罩层 - 移动端侧边栏展开时显示 */
+        .sidebar-overlay {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }}
+
+        .sidebar-overlay.visible {{
+            opacity: 1;
+            visibility: visible;
+        }}
+
         /* Markdown内容样式 - 扁平化简约风格 */
         .markdown-body {{
             line-height: 1.8;
@@ -1478,55 +1538,48 @@ def convert_markdown_to_html(markdown_file):
 
         @media (max-width: 768px) {{
             body {{
-                flex-direction: column !important;
-                overflow: visible !important;
-                min-height: 100vh;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
             }}
 
+            /* 显示侧边栏切换按钮 */
+            .sidebar-toggle {{
+                display: flex !important;
+            }}
+
+            /* 侧边栏默认收起，左右布局 */
             .sidebar {{
-                width: 100% !important;
-                min-width: 100% !important;
-                max-width: 100% !important;
-                height: auto !important;
-                position: static !important;
-                border-right: none !important;
-                border-bottom: 1px solid var(--border-color);
-                display: block !important;
-                background: var(--sidebar-bg);
-                flex-shrink: 0;
+                width: 280px !important;
+                min-width: 280px !important;
+                max-width: 280px !important;
+                height: 100vh !important;
+                position: fixed !important;
+                left: 0;
+                top: 0;
+                border-right: 1px solid var(--border-color);
+                border-bottom: none !important;
+                transform: translateX(-100%);
+                z-index: 100;
+            }}
+
+            /* 侧边栏展开状态 */
+            .sidebar.expanded {{
+                transform: translateX(0);
             }}
 
             .sidebar-header {{
                 padding: 1rem 1.25rem;
-                cursor: pointer;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
             }}
 
+            /* 移除header的箭头 */
             .sidebar-header::after {{
-                content: '▼';
-                font-size: 0.75rem;
-                color: var(--text-secondary);
-                transition: transform 0.3s ease;
-            }}
-
-            .sidebar-header.collapsed::after {{
-                transform: rotate(-90deg);
+                display: none;
             }}
 
             .sidebar-content {{
                 padding: 0.75rem 1.25rem;
-                overflow-y: visible;
-                max-height: none;
-                transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
-            }}
-
-            .sidebar-content.collapsed {{
-                max-height: 0 !important;
-                opacity: 0;
-                padding: 0 1.25rem !important;
-                overflow: hidden !important;
+                overflow-y: auto;
+                max-height: calc(100vh - 140px);
             }}
 
             /* 移动端隐藏拖拽分隔线 */
@@ -1534,13 +1587,13 @@ def convert_markdown_to_html(markdown_file):
                 display: none !important;
             }}
 
+            /* 内容区域占满宽度 */
             .content {{
                 margin-left: 0 !important;
                 padding: 1rem !important;
+                padding-top: 4rem !important;
                 width: 100% !important;
-                min-height: auto !important;
-                height: auto !important;
-                overflow-y: visible !important;
+                min-height: 100vh !important;
             }}
 
             .markdown-body {{
@@ -1570,6 +1623,8 @@ def convert_markdown_to_html(markdown_file):
                 width: 2.25rem;
                 height: 2.25rem;
                 font-size: 0.875rem;
+                top: 0.75rem;
+                right: 0.75rem;
             }}
 
             .back-to-top {{
@@ -1681,6 +1736,14 @@ def convert_markdown_to_html(markdown_file):
     </style>
 </head>
 <body>
+    <!-- 侧边栏切换按钮 -->
+    <button class="sidebar-toggle" id="sidebarToggle" title="切换目录">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- 遮罩层 -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- 主题切换按钮 -->
     <button class="theme-toggle" id="themeToggle" title="切换主题">
         <i class="fas fa-moon"></i>
@@ -1692,7 +1755,7 @@ def convert_markdown_to_html(markdown_file):
     </button>
 
     <!-- 侧边栏 -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2><i class="fas fa-book"></i> 文档目录</h2>
         </div>
@@ -1721,11 +1784,44 @@ def convert_markdown_to_html(markdown_file):
             const tocLinks = document.querySelectorAll('.toc a');
             const contentElement = document.querySelector('.content');
             const resizer = document.getElementById('sidebarResizer');
-            const sidebar = document.querySelector('.sidebar');
+            const sidebar = document.getElementById('sidebar');
             const root = document.documentElement;
             const themeToggle = document.getElementById('themeToggle');
             const backToTop = document.getElementById('backToTop');
             const tocSearch = document.getElementById('tocSearch');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            // 侧边栏展开/收起功能
+            function toggleSidebar() {{
+                const isExpanded = sidebar.classList.contains('expanded');
+                if (isExpanded) {{
+                    sidebar.classList.remove('expanded');
+                    sidebarOverlay.classList.remove('visible');
+                    document.body.style.overflow = '';
+                }} else {{
+                    sidebar.classList.add('expanded');
+                    sidebarOverlay.classList.add('visible');
+                    document.body.style.overflow = 'hidden';
+                }}
+            }}
+
+            if (sidebarToggle) {{
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }}
+
+            if (sidebarOverlay) {{
+                sidebarOverlay.addEventListener('click', toggleSidebar);
+            }}
+
+            // 点击目录链接后关闭侧边栏（移动端）
+            tocLinks.forEach(link => {{
+                link.addEventListener('click', function() {{
+                    if (window.innerWidth <= 768 && sidebar.classList.contains('expanded')) {{
+                        toggleSidebar();
+                    }}
+                }});
+            }});
 
             // 搜索功能
             if (tocSearch) {{
@@ -2223,63 +2319,37 @@ def convert_markdown_to_html(markdown_file):
             const sidebarHeader = document.querySelector('.sidebar-header');
             const sidebarContent = document.querySelector('.sidebar-content');
 
-            if (sidebarHeader && sidebarContent && window.innerWidth <= 768) {{
-                // 初始状态：在移动端默认折叠
-                sidebarHeader.classList.add('collapsed');
-                sidebarContent.classList.add('collapsed');
-
-                // 点击侧边栏标题切换折叠状态
-                sidebarHeader.addEventListener('click', function() {{
-                    const isCollapsed = this.classList.contains('collapsed');
-
-                    if (isCollapsed) {{
-                        // 展开
-                        this.classList.remove('collapsed');
-                        sidebarContent.classList.remove('collapsed');
-                    }} else {{
-                        // 折叠
-                        this.classList.add('collapsed');
-                        sidebarContent.classList.add('collapsed');
+            // 监听窗口大小变化
+            window.addEventListener('resize', function() {{
+                if (window.innerWidth > 768) {{
+                    // 在大屏幕上确保侧边栏展开，隐藏遮罩
+                    sidebar.classList.remove('expanded');
+                    sidebarOverlay.classList.remove('visible');
+                    document.body.style.overflow = '';
+                    // 显示拖拽分隔线
+                    if (resizer) {{
+                        resizer.style.display = 'block';
                     }}
-                }});
 
-                // 监听窗口大小变化
-                window.addEventListener('resize', function() {{
-                    if (window.innerWidth > 768) {{
-                        // 在大屏幕上确保侧边栏展开
-                        sidebarHeader.classList.remove('collapsed');
-                        sidebarContent.classList.remove('collapsed');
-                        // 显示拖拽分隔线
-                        if (resizer) {{
-                            resizer.style.display = 'block';
-                        }}
-
-                        // 重新应用用户保存的宽度
-                        try {{
-                            const savedWidth = localStorage.getItem('sidebarWidth');
-                            if (savedWidth) {{
-                                const width = parseFloat(savedWidth);
-                                if (!isNaN(width)) {{
-                                    // 使用setSidebarWidth函数会自动进行边界检查
-                                    setSidebarWidth(width);
-                                }}
+                    // 重新应用用户保存的宽度
+                    try {{
+                        const savedWidth = localStorage.getItem('sidebarWidth');
+                        if (savedWidth) {{
+                            const width = parseFloat(savedWidth);
+                            if (!isNaN(width)) {{
+                                setSidebarWidth(width);
                             }}
-                        }} catch (e) {{
-                            console.warn('无法从localStorage读取侧边栏宽度:', e);
                         }}
-                    }} else {{
-                        // 在小屏幕上恢复折叠状态
-                        if (!sidebarHeader.classList.contains('collapsed')) {{
-                            sidebarHeader.classList.add('collapsed');
-                            sidebarContent.classList.add('collapsed');
-                        }}
-                        // 隐藏拖拽分隔线
-                        if (resizer) {{
-                            resizer.style.display = 'none';
-                        }}
+                    }} catch (e) {{
+                        console.warn('无法从localStorage读取侧边栏宽度:', e);
                     }}
-                }});
-            }}
+                }} else {{
+                    // 在小屏幕上隐藏拖拽分隔线
+                    if (resizer) {{
+                        resizer.style.display = 'none';
+                    }}
+                }}
+            }});
         }});
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
