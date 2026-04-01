@@ -110,7 +110,7 @@ async function convertFile(filePath: string): Promise<void> {
     const showNotification = config.get<boolean>('showNotification') ?? true;
     
     // 获取Python脚本路径
-    const extensionPath = vscode.extensions.getExtension('your-publisher-name.md-to-html-converter')?.extensionPath;
+    const extensionPath = vscode.extensions.getExtension('le1212.md-to-html-converter')?.extensionPath;
     const scriptPath = extensionPath 
         ? path.join(extensionPath, 'python', 'convert.py')
         : path.join(__dirname, '..', 'python', 'convert.py');

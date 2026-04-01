@@ -3,7 +3,7 @@
   "displayName": "Markdown to HTML Converter",
   "description": "将Markdown文件转换为带有目录和代码高亮的精美HTML文档",
   "version": "1.0.0",
-  "publisher": "your-publisher-name",
+  "publisher": "le1212",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -105,7 +105,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/md-to-html-converter.git"
+    "url": "https://github.com/le1212/Markdown-to-HTML-Converter.git"
   },
   "license": "MIT"
 }
