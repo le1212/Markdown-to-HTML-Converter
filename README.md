@@ -15,14 +15,14 @@
 
 ## 编辑器支持
 
-| 编辑器 | 支持程度 | 配置文件位置 |
-|--------|----------|--------------|
-| **VS Code** | ✅ 原生扩展 | 根目录 |
-| **JetBrains 系列** | ✅ External Tools | `editors/jetbrains/` |
-| **Sublime Text** | ✅ Build System | `editors/sublime-text/` |
-| **Vim/Neovim** | ✅ 插件配置 | `editors/vim/` |
-| **Notepad++** | ⚠️ 运行命令 | `editors/notepad++/` |
-| **命令行** | ✅ 直接运行 | `python/convert.py` |
+| 编辑器              | 支持程度             | 配置文件位置                  |
+| ---------------- | ---------------- | ----------------------- |
+| **VS Code**      | ✅ 原生扩展           | 根目录                     |
+| **JetBrains 系列** | ✅ External Tools | `editors/jetbrains/`    |
+| **Sublime Text** | ✅ Build System   | `editors/sublime-text/` |
+| **Vim/Neovim**   | ✅ 插件配置           | `editors/vim/`          |
+| **Notepad++**    | ⚠️ 运行命令          | `editors/notepad++/`    |
+| **命令行**          | ✅ 直接运行           | `python/convert.py`     |
 
 ## 安装
 
@@ -113,11 +113,11 @@ python python/convert.py file1.md file2.md file3.md
 
 ### VS Code
 
-| 方式 | 操作 |
-|------|------|
+| 方式       | 操作                                      |
+| -------- | --------------------------------------- |
 | **右键菜单** | 在 `.md` 文件上右键 → "Markdown转HTML: 转换当前文件" |
-| **命令面板** | `Ctrl+Shift+P` → 输入 "Markdown转HTML" |
-| **快捷键** | `Ctrl+Shift+H` |
+| **命令面板** | `Ctrl+Shift+P` → 输入 "Markdown转HTML"     |
+| **快捷键**  | `Ctrl+Shift+H`                          |
 
 ### 其他编辑器
 
@@ -129,12 +129,12 @@ python python/convert.py file1.md file2.md file3.md
 
 在VS Code设置中搜索 "Markdown to HTML" 可以配置以下选项：
 
-| 选项 | 说明 | 默认值 |
-|------|------|--------|
-| `mdToHtml.autoConvertOnSave` | 保存时自动转换 | `false` |
-| `mdToHtml.outputDirectory` | 输出目录 | `""` (同目录) |
-| `mdToHtml.pythonPath` | Python路径 | `"python"` |
-| `mdToHtml.showNotification` | 显示通知 | `true` |
+| 选项                           | 说明       | 默认值        |
+| ---------------------------- | -------- | ---------- |
+| `mdToHtml.autoConvertOnSave` | 保存时自动转换  | `false`    |
+| `mdToHtml.outputDirectory`   | 输出目录     | `""` (同目录) |
+| `mdToHtml.pythonPath`        | Python路径 | `"python"` |
+| `mdToHtml.showNotification`  | 显示通知     | `true`     |
 
 ## 生成的HTML特性
 
@@ -225,7 +225,7 @@ A: 目前支持标准Markdown语法，暂不支持GFM扩展语法（如任务列
 
 ## 更新日志
 
-### v1.0.1 (2024-04-01)
+### v1.0.1&#x20;
 
 - 🐛 修复PC端目录点击失效问题（resizer z-index）
 - 🐛 修复移动端侧边栏展开时背景滚动问题
@@ -236,7 +236,7 @@ A: 目前支持标准Markdown语法，暂不支持GFM扩展语法（如任务列
 - ✨ 添加多编码支持（UTF-8, GBK, GB2312等）
 - ✨ 添加错误处理和磁盘空间检查
 
-### v1.0.0 (2024-04-01)
+### v1.0.0
 
 - ✨ 初始版本发布
 - ✅ VS Code扩展支持
@@ -263,3 +263,4 @@ le1212
 
 - [GitHub仓库](https://github.com/le1212/Markdown-to-HTML-Converter)
 - [问题反馈](https://github.com/le1212/Markdown-to-HTML-Converter/issues)
+
