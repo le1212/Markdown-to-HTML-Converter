@@ -1518,7 +1518,7 @@ def convert_markdown_to_html(markdown_file):
         }}
 
         .markdown-body table th {{
-            background: #f8fafc;
+            background: var(--sidebar-bg);
             color: var(--text-primary);
             font-weight: 600;
             padding: 0.75rem;
