@@ -1814,15 +1814,6 @@ def convert_markdown_to_html(markdown_file):
                 sidebarOverlay.addEventListener('click', toggleSidebar);
             }}
 
-            // 点击目录链接后关闭侧边栏（移动端）
-            tocLinks.forEach(link => {{
-                link.addEventListener('click', function() {{
-                    if (window.innerWidth <= 768 && sidebar.classList.contains('expanded')) {{
-                        toggleSidebar();
-                    }}
-                }});
-            }});
-
             // 搜索功能
             if (tocSearch) {{
                 tocSearch.addEventListener('input', (e) => {{
@@ -2098,19 +2089,34 @@ def convert_markdown_to_html(markdown_file):
                     const targetElement = document.getElementById(targetId);
                     if (!targetElement) return;
 
-                    // 计算相对于内容区域的滚动位置
-                    const contentRect = contentElement.getBoundingClientRect();
-                    const targetRect = targetElement.getBoundingClientRect();
-                    const scrollTop = contentElement.scrollTop;
-                    const targetTop = targetRect.top - contentRect.top + scrollTop;
+                    // 移动端：关闭侧边栏
+                    if (window.innerWidth <= 768 && sidebar.classList.contains('expanded')) {{
+                        toggleSidebar();
+                    }}
 
-                    // 使用动态偏移（视口高度的10%）
+                    // 计算滚动位置
+                    const isMobile = window.innerWidth <= 768;
                     const offset = Math.min(100, window.innerHeight * 0.1);
 
-                    contentElement.scrollTo({{
-                        top: targetTop - offset,
-                        behavior: 'smooth'
-                    }});
+                    if (isMobile) {{
+                        // 移动端：滚动整个页面
+                        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - offset;
+                        window.scrollTo({{
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        }});
+                    }} else {{
+                        // 桌面端：滚动内容区域
+                        const contentRect = contentElement.getBoundingClientRect();
+                        const targetRect = targetElement.getBoundingClientRect();
+                        const scrollTop = contentElement.scrollTop;
+                        const targetTop = targetRect.top - contentRect.top + scrollTop;
+
+                        contentElement.scrollTo({{
+                            top: targetTop - offset,
+                            behavior: 'smooth'
+                        }});
+                    }}
 
                     // 更新活动状态
                     tocLinks.forEach(l => l.classList.remove('active'));
@@ -2120,95 +2126,96 @@ def convert_markdown_to_html(markdown_file):
 
             // 滚动时更新活动状态 - 使用防抖优化性能
             let scrollTimeout = null;
-            contentElement.addEventListener('scroll', function() {{
-                // 使用防抖，避免频繁触发
+            
+            function updateActiveHeading() {{
+                const headings = document.querySelectorAll('.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6');
+                let currentActiveId = null;
+                const isMobile = window.innerWidth <= 768;
+                const offset = Math.min(100, window.innerHeight * 0.1);
+                
+                // 根据设备类型获取滚动位置
+                const scrollPosition = isMobile 
+                    ? window.pageYOffset + offset 
+                    : contentElement.scrollTop + 100;
+
+                // 找到当前可见的标题
+                for (let i = headings.length - 1; i >= 0; i--) {{
+                    const heading = headings[i];
+                    if (heading.offsetTop <= scrollPosition + offset) {{
+                        currentActiveId = heading.id;
+                        break;
+                    }}
+                }}
+
+                // 更新活动链接
+                let activeLink = null;
+                if (currentActiveId) {{
+                    tocLinks.forEach(link => {{
+                        const linkId = link.getAttribute('href').substring(1);
+                        if (linkId === currentActiveId) {{
+                            link.classList.add('active');
+                            activeLink = link;
+                        }} else {{
+                            link.classList.remove('active');
+                        }}
+                    }});
+                }}
+
+                // 如果找到活动链接，确保它在侧边栏中可见
+                if (activeLink) {{
+                    const sidebarContent = document.querySelector('.sidebar-content');
+                    if (sidebarContent) {{
+                        const linkRect = activeLink.getBoundingClientRect();
+                        const sidebarRect = sidebarContent.getBoundingClientRect();
+
+                        const linkTopRelative = linkRect.top - sidebarRect.top + sidebarContent.scrollTop;
+                        const linkBottomRelative = linkRect.bottom - sidebarRect.top + sidebarContent.scrollTop;
+
+                        const sidebarScrollTop = sidebarContent.scrollTop;
+                        const sidebarHeight = sidebarContent.clientHeight;
+
+                        const isAboveViewport = linkTopRelative < sidebarScrollTop;
+                        const isBelowViewport = linkBottomRelative > sidebarScrollTop + sidebarHeight;
+
+                        if (isAboveViewport || isBelowViewport) {{
+                            let targetScrollTop;
+
+                            if (isAboveViewport) {{
+                                targetScrollTop = linkTopRelative - 20;
+                            }} else {{
+                                targetScrollTop = linkBottomRelative - sidebarHeight + 20;
+                            }}
+
+                            const maxScrollTop = sidebarContent.scrollHeight - sidebarHeight;
+                            const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
+
+                            if (Math.abs(sidebarScrollTop - finalScrollTop) > 5) {{
+                                sidebarContent.scrollTo({{
+                                    top: finalScrollTop,
+                                    behavior: 'smooth'
+                                }});
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+
+            function handleScroll() {{
                 if (scrollTimeout) {{
                     clearTimeout(scrollTimeout);
                 }}
+                scrollTimeout = setTimeout(updateActiveHeading, 50);
+            }}
 
-                scrollTimeout = setTimeout(() => {{
-                    const headings = document.querySelectorAll('.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6');
-                    let currentActiveId = null;
-                    const scrollPosition = contentElement.scrollTop + 100;
-
-                    // 找到当前可见的标题
-                    for (let i = headings.length - 1; i >= 0; i--) {{
-                        const heading = headings[i];
-                        // 使用动态偏移
-                        const offset = Math.min(100, window.innerHeight * 0.1);
-                        if (heading.offsetTop <= scrollPosition + offset) {{
-                            currentActiveId = heading.id;
-                            break;
-                        }}
-                    }}
-
-                    // 更新活动链接
-                    let activeLink = null;
-                    if (currentActiveId) {{
-                        tocLinks.forEach(link => {{
-                            const linkId = link.getAttribute('href').substring(1);
-                            if (linkId === currentActiveId) {{
-                                link.classList.add('active');
-                                activeLink = link;
-                            }} else {{
-                                link.classList.remove('active');
-                            }}
-                        }});
-                    }}
-
-                    // 如果找到活动链接，确保它在侧边栏中可见
-                    if (activeLink) {{
-                        const sidebarContent = document.querySelector('.sidebar-content');
-                        if (sidebarContent) {{
-                            // 使用更简单可靠的方法计算链接位置
-                            // 获取链接相对于侧边栏内容区域的边界矩形
-                            const linkRect = activeLink.getBoundingClientRect();
-                            const sidebarRect = sidebarContent.getBoundingClientRect();
-
-                            // 计算链接在侧边栏内容区域中的相对位置
-                            const linkTopRelative = linkRect.top - sidebarRect.top + sidebarContent.scrollTop;
-                            const linkBottomRelative = linkRect.bottom - sidebarRect.top + sidebarContent.scrollTop;
-
-                            const sidebarScrollTop = sidebarContent.scrollTop;
-                            const sidebarHeight = sidebarContent.clientHeight;
-                            const linkHeight = activeLink.offsetHeight;
-
-                            // 检查链接是否在侧边栏可视区域外
-                            const isAboveViewport = linkTopRelative < sidebarScrollTop;
-                            const isBelowViewport = linkBottomRelative > sidebarScrollTop + sidebarHeight;
-
-                            if (isAboveViewport || isBelowViewport) {{
-                                // 计算需要滚动的距离
-                                let targetScrollTop;
-
-                                if (isAboveViewport) {{
-                                    // 链接在可视区域上方，滚动到链接顶部
-                                    targetScrollTop = linkTopRelative - 20; // 留出20px的顶部边距
-                                }} else {{
-                                    // 链接在可视区域下方，滚动到链接底部可见
-                                    targetScrollTop = linkBottomRelative - sidebarHeight + 20; // 留出20px的底部边距
-                                }}
-
-                                // 确保滚动位置在有效范围内
-                                const maxScrollTop = sidebarContent.scrollHeight - sidebarHeight;
-                                const finalScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
-
-                                // 只有当需要滚动时才执行滚动
-                                if (Math.abs(sidebarScrollTop - finalScrollTop) > 5) {{
-                                    sidebarContent.scrollTo({{
-                                        top: finalScrollTop,
-                                        behavior: 'smooth'
-                                    }});
-                                }}
-                            }}
-                        }}
-                    }}
-                }}, 50); // 50ms防抖延迟
-            }});
+            // 桌面端监听内容区域滚动
+            contentElement.addEventListener('scroll', handleScroll);
+            
+            // 移动端监听window滚动
+            window.addEventListener('scroll', handleScroll);
 
             // 初始激活第一个可见的标题
             setTimeout(() => {{
-                contentElement.dispatchEvent(new Event('scroll'));
+                updateActiveHeading();
             }}, 100);
 
             // 代码块复制功能
