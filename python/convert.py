@@ -1922,6 +1922,51 @@ def convert_markdown_to_html(markdown_file):
                 }}
             }});
 
+            // 设置侧边栏宽度（全局函数）
+            const setSidebarWidth = (width) => {{
+                const minWidth = 280;
+                const minContentWidth = 400;
+                let maxWidth = 600;
+
+                if (window.innerWidth <= 1024) {{
+                    maxWidth = 500;
+                }}
+
+                const screenMaxWidth = window.innerWidth - minContentWidth;
+                const actualMaxWidth = Math.max(minWidth, Math.min(maxWidth, screenMaxWidth));
+                const clampedWidth = Math.max(minWidth, Math.min(width, actualMaxWidth));
+
+                root.style.setProperty('--sidebar-width', clampedWidth + 'px');
+
+                if (resizer) {{
+                    resizer.classList.remove('at-min-boundary', 'at-max-boundary');
+                    if (clampedWidth <= minWidth + 5) {{
+                        resizer.classList.add('at-min-boundary');
+                    }} else if (clampedWidth >= actualMaxWidth - 5) {{
+                        resizer.classList.add('at-max-boundary');
+                    }}
+                }}
+
+                try {{
+                    localStorage.setItem('sidebarWidth', clampedWidth.toString());
+                }} catch (e) {{
+                    console.warn('无法保存侧边栏宽度到localStorage:', e);
+                }}
+            }};
+
+            // 从localStorage恢复宽度
+            try {{
+                const savedWidth = localStorage.getItem('sidebarWidth');
+                if (savedWidth) {{
+                    const width = parseFloat(savedWidth);
+                    if (!isNaN(width)) {{
+                        setSidebarWidth(width);
+                    }}
+                }}
+            }} catch (e) {{
+                console.warn('无法从localStorage读取侧边栏宽度:', e);
+            }}
+
             // 侧边栏拖拽功能
             if (resizer && sidebar && window.innerWidth > 768) {{
                 // 确保拖拽分隔线在大屏幕上显示
@@ -1935,57 +1980,6 @@ def convert_markdown_to_html(markdown_file):
                 const getSidebarWidth = () => {{
                     return parseFloat(getComputedStyle(root).getPropertyValue('--sidebar-width'));
                 }};
-
-                // 设置侧边栏宽度
-                const setSidebarWidth = (width) => {{
-                    // 根据当前屏幕尺寸确定边界限制
-                    const minWidth = 280; // 最小宽度，保证基本功能
-                    const minContentWidth = 400; // 内容区域最小宽度
-                    let maxWidth = 600; // 默认最大宽度，与CSS保持一致
-
-                    if (window.innerWidth <= 1024) {{
-                        maxWidth = 500; // 在1024px以下使用较小的最大宽度
-                    }}
-
-                    // 计算实际最大宽度：不能超过屏幕宽度减去内容区域最小宽度
-                    const screenMaxWidth = window.innerWidth - minContentWidth;
-                    const actualMaxWidth = Math.max(minWidth, Math.min(maxWidth, screenMaxWidth)); // 确保实际最大宽度不小于最小宽度
-
-                    // 确保宽度在合法范围内
-                    const clampedWidth = Math.max(minWidth, Math.min(width, actualMaxWidth));
-
-                    // 更新CSS变量，拖拽分隔线会自动跟随
-                    root.style.setProperty('--sidebar-width', clampedWidth + 'px');
-
-                    // 添加边界状态反馈
-                    resizer.classList.remove('at-min-boundary', 'at-max-boundary');
-                    if (clampedWidth <= minWidth + 5) {{ // 接近最小边界
-                        resizer.classList.add('at-min-boundary');
-                    }} else if (clampedWidth >= actualMaxWidth - 5) {{ // 接近最大边界
-                        resizer.classList.add('at-max-boundary');
-                    }}
-
-                    // 保存到localStorage
-                    try {{
-                        localStorage.setItem('sidebarWidth', clampedWidth.toString());
-                    }} catch (e) {{
-                        console.warn('无法保存侧边栏宽度到localStorage:', e);
-                    }}
-                }};
-
-                // 从localStorage恢复宽度
-                try {{
-                    const savedWidth = localStorage.getItem('sidebarWidth');
-                    if (savedWidth) {{
-                        const width = parseFloat(savedWidth);
-                        if (!isNaN(width)) {{
-                            // 使用setSidebarWidth函数会自动进行边界检查
-                            setSidebarWidth(width);
-                        }}
-                    }}
-                }} catch (e) {{
-                    console.warn('无法从localStorage读取侧边栏宽度:', e);
-                }}
 
 
                 // 鼠标按下事件
