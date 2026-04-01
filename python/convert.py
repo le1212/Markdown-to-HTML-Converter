@@ -2095,6 +2095,20 @@ def convert_markdown_to_html(markdown_file):
                         toggleSidebar();
                     }}
 
+                    // 确保父级展开
+                    let parent = this.closest('li');
+                    while (parent) {{
+                        const toggle = parent.querySelector('.toc-toggle');
+                        const children = parent.querySelector('.toc-children');
+
+                        if (toggle && children) {{
+                            children.classList.remove('collapsed');
+                            toggle.classList.add('expanded');
+                        }}
+
+                        parent = parent.parentElement?.closest('li');
+                    }}
+
                     // 计算滚动位置
                     const isMobile = window.innerWidth <= 768;
                     const offset = Math.min(100, window.innerHeight * 0.1);
@@ -2307,25 +2321,6 @@ def convert_markdown_to_html(markdown_file):
                         // 折叠
                         children.classList.add('collapsed');
                         this.classList.remove('expanded');
-                    }}
-                }});
-            }});
-
-            // 点击链接时，确保父级展开
-            tocLinks.forEach(link => {{
-                link.addEventListener('click', function() {{
-                    // 找到所有父级的折叠元素并展开
-                    let parent = this.closest('li');
-                    while (parent) {{
-                        const toggle = parent.querySelector('.toc-toggle');
-                        const children = parent.querySelector('.toc-children');
-
-                        if (toggle && children) {{
-                            children.classList.remove('collapsed');
-                            toggle.classList.add('expanded');
-                        }}
-
-                        parent = parent.parentElement?.closest('li');
                     }}
                 }});
             }});
