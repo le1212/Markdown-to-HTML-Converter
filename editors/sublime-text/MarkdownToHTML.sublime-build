@@ -1,0 +1,13 @@
+{
+    "cmd": ["python", "${packages}/md-to-html-converter/python/convert.py", "$file"],
+    "selector": "text.html.markdown",
+    "working_dir": "$file_path",
+    "file_patterns": ["*.md"],
+    "variants": [
+        {
+            "name": "Convert All",
+            "cmd": ["python", "-c", "import os; import subprocess; [subprocess.run(['python', '${packages}/md-to-html-converter/python/convert.py', os.path.join(root, f)]) for root, dirs, files in os.walk('$folder') for f in files if f.endswith('.md')]"],
+            "working_dir": "$folder"
+        }
+    ]
+}

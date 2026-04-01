@@ -1,0 +1,36 @@
+<toolSet name="Markdown to HTML Converter">
+  <description>将Markdown文件转换为HTML</description>
+  
+  <tool name="Convert to HTML" 
+        description="将当前Markdown文件转换为HTML"
+        showInMainMenu="true" 
+        showInEditor="true" 
+        showInProjectView="true"
+        useConsole="true"
+        synchronizeAfterRun="true">
+    
+    <exec>
+      <option name="COMMAND" value="python" />
+      <option name="PARAMETERS" value="$ProjectFileDir$/python/convert.py $FilePath$" />
+      <option name="WORKING_DIRECTORY" value="$FileDir$" />
+    </exec>
+    
+    <filter>
+      <option name="PATTERN" value="*.md" />
+    </filter>
+  </tool>
+  
+  <tool name="Convert All Markdown Files" 
+        description="转换项目中所有Markdown文件"
+        showInMainMenu="true" 
+        showInEditor="false" 
+        showInProjectView="true"
+        useConsole="true">
+    
+    <exec>
+      <option name="COMMAND" value="python" />
+      <option name="PARAMETERS" value="-c &quot;import os; import subprocess; [subprocess.run(['python', '$ProjectFileDir$/python/convert.py', os.path.join(root, f)]) for root, dirs, files in os.walk('$ProjectFileDir$') for f in files if f.endswith('.md')]&quot;" />
+      <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
+    </exec>
+  </tool>
+</toolSet>

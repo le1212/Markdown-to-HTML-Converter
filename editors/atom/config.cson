@@ -1,0 +1,9 @@
+{
+  "md-to-html-converter": {
+    "pythonPath": "python",
+    "scriptPath": "",
+    "autoConvertOnSave": false,
+    "showNotification": true,
+    "outputDirectory": ""
+  }
+}
