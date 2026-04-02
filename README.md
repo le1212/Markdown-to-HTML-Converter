@@ -55,7 +55,7 @@ npm run compile
 npm run package
 
 # 安装
-code --install-extension md-to-html-converter-1.0.0.vsix
+code --install-extension md-to-html-converter-1.0.2.vsix
 ```
 
 ### JetBrains 系列 (IntelliJ IDEA, PyCharm, WebStorm, etc.)
